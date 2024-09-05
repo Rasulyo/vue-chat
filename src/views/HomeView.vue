@@ -6,31 +6,16 @@
       @userSelected="selectUser"
     />
     <div v-else class="wrapper">
-      <div class="user">
-        <div class="img">
-          <h2 class="user__title">{{ selectedUser?.name }}</h2>
-          <img :src="selectedUser?.img" alt="User avatar" />
-        </div>
-        <button class="user__btn" @click="logout(selectedUser.id)">
-          Logout
-        </button>
-      </div>
+      <UserComponent :selectedUser="selectedUser" @logout="logout" />
       <div class="chat__wrapper">
-        <div class="chats">
-          <button
-            v-for="user in availableChats"
-            :key="user.id"
-            class="chat"
-            @click="openChat(user)"
-          >
-            {{ user.name }}
-          </button>
-        </div>
+        <ChatsComponent :availableChats="availableChats" @openChat="openChat" />
         <ChatComponent
+          v-if="currentChatUser"
           :currentUser="selectedUser"
           :chatUser="currentChatUser"
           ref="chatComponent"
         />
+        <div v-else>Выберите чат</div>
       </div>
     </div>
   </div>
@@ -39,7 +24,9 @@
 <script>
 import UserSelectionModal from "../components/UserSelectionModal.vue";
 import ChatComponent from "../components/ChatComponent.vue";
-
+import UserComponent from "../components/UserComponent.vue";
+import ChatsComponent from "../components/ChatsComponent.vue";
+import { handleBroadcastMessage } from "../utils/broadCastService";
 const channelName = "chat_channel";
 const bc = new BroadcastChannel(channelName);
 
@@ -47,6 +34,8 @@ export default {
   components: {
     UserSelectionModal,
     ChatComponent,
+    ChatsComponent,
+    UserComponent,
   },
 
   data() {
@@ -87,7 +76,9 @@ export default {
     },
   },
   mounted() {
-    this.syncSelectedUsers();
+    if (this.availableUsers && this.availableUsers.length > 0) {
+      this.syncSelectedUsers();
+    }
     window.addEventListener("storage", this.syncSelectedUsers);
     bc.onmessage = this.handleBroadcastMessage;
     this.isMounted = true;
@@ -108,23 +99,26 @@ export default {
   methods: {
     selectUser(user) {
       localStorage.setItem(`selectedUser${user.id}`, JSON.stringify(user));
-      this.availableUsers = this.availableUsers.map((item) => {
-        if (user.id === item.id) {
-          item.selected = true;
-        }
-        return item;
-      });
+      this.availableUsers =
+        this.availableUsers &&
+        this.availableUsers.map((item) => {
+          if (user.id === item.id) {
+            item.selected = true;
+          }
+          return item;
+        });
       this.selectedUser = user;
     },
     syncSelectedUsers() {
-      this.availableUsers.forEach((user) => {
-        const storedUser = localStorage.getItem(`selectedUser${user.id}`);
-        if (storedUser) {
-          user.selected = false;
-        } else {
-          user.selected = false;
-        }
-      });
+      this.availableUsers &&
+        this.availableUsers.forEach((user) => {
+          const storedUser = localStorage.getItem(`selectedUser${user.id}`);
+          if (storedUser) {
+            user.selected = false;
+          } else {
+            user.selected = false;
+          }
+        });
     },
     logout(id) {
       localStorage.removeItem(`selectedUser${id}`);
@@ -136,35 +130,17 @@ export default {
       this.currentChatUser = user;
     },
     handleBroadcastMessage(event) {
-      if (event.data.type === "userSelection") {
-        const user = event.data.user;
-        this.availableUsers = this.availableUsers.map((item) => {
-          if (user.id === item.id) {
-            item.selected = true;
-          }
-          return item;
-        });
-        if (this.selectedUser && this.selectedUser.id === user.id) {
-          this.selectedUser = user;
-        }
-      } else if (event.data.type === "chatUserSelection") {
-        const user = event.data.user;
-        if (this.currentChatUser && this.currentChatUser.id === user.id) {
-          this.currentChatUser = user;
-        }
-      } else if (event.data.type === "userDeselection") {
-        const user = event.data.user;
-        this.availableUsers = this.availableUsers.map((item) => {
-          if (user.id === item.id) {
-            item.selected = false;
-          }
-          return item;
-        });
-      } else if (event.data.type === "newMessage") {
-        if (this.$refs.chatComponent) {
-          this.$refs.chatComponent.handleBroadcastMessage(event);
-        }
-      }
+      const { availableUsers, selectedUser, currentChatUser } =
+        handleBroadcastMessage(
+          event,
+          this.availableUsers,
+          this.selectedUser,
+          this.currentChatUser,
+          this.$refs.chatComponent
+        );
+      this.availableUsers = availableUsers;
+      this.selectedUser = selectedUser;
+      this.currentChatUser = currentChatUser;
     },
   },
 };
@@ -176,45 +152,9 @@ export default {
   flex-direction: column;
   position: relative;
   padding: 10px;
+  height: 100vh;
+  overflow: hidden;
 
-  .user {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    align-items: center;
-    height: 40px;
-    background: rgba($color: #d7d7d7, $alpha: 0.4);
-
-    .img {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      & img {
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-      }
-    }
-
-    &__title {
-      color: #000;
-      font-size: 1.6rem;
-    }
-    &__btn {
-      border-radius: 3px;
-      border: none;
-      padding: 5px 15px;
-      font-size: 1.2rem;
-      text-transform: lowercase;
-      color: #ffffff;
-      background: #0088cc;
-
-      &:hover {
-        cursor: pointer;
-        color: #2e2e2e;
-      }
-    }
-  }
   .chat__wrapper {
     display: flex;
     width: 100%;
@@ -222,29 +162,6 @@ export default {
     margin-top: 5px;
     border-top: 1px solid rgba($color: #d7d7d7, $alpha: 0.4);
     gap: 15px;
-    .chats {
-      display: flex;
-      flex-direction: column;
-      align-self: flex-start;
-      height: calc(100vh - 100px);
-      min-width: 250px;
-      background: rgb(16, 16, 16);
-
-      .chat {
-        height: 35px;
-        padding: 5px 10px;
-        border: none;
-        font-size: 1rem;
-        color: white;
-        background: rgba($color: #d7d7d7, $alpha: 0.4);
-
-        &:hover {
-          cursor: pointer;
-          color: rgb(0, 0, 0);
-          background: #0088cc;
-        }
-      }
-    }
   }
 }
 </style>

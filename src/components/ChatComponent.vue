@@ -1,6 +1,6 @@
 <template>
   <div class="chat-container">
-    <h3>Чат с {{ chatUser.name }}</h3>
+    <h3>Чат с {{ chatUser?.name }}</h3>
     <div class="messages">
       <div
         v-for="(message, index) in messages"
@@ -15,13 +15,13 @@
           <img
             v-if="message.sender !== currentUser?.name"
             class="chat__user"
-            :src="chatUser.img"
+            :src="chatUser && chatUser.img"
             alt="Chat user"
           />
           <img
             v-if="message.sender === currentUser?.name"
             class="chat__user"
-            :src="currentUser.img"
+            :src="currentUser && currentUser.img"
             alt="Current user"
           />
         </div>
@@ -125,7 +125,9 @@ export default {
   flex-direction: column;
   min-height: 100%;
   width: 100%;
-  max-height: 100vh;
+  position: relative;
+  max-height: 80vh;
+  height: 100%;
   background: #fff;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -141,7 +143,7 @@ h3 {
 
 .messages {
   flex: 1;
-  padding: 10px;
+  padding: 10px 10px 100px;
   overflow-y: auto;
   gap: 10px;
   background-color: #f0f0f0;
@@ -188,6 +190,10 @@ h3 {
 .message-input {
   display: flex;
   padding: 10px;
+  position: absolute;
+  bottom: 0px;
+  right: 0;
+  left: 0;
   background-color: #f9f9f9;
   border-top: 1px solid #e0e0e0;
 }
