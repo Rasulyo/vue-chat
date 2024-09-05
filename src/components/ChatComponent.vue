@@ -1,6 +1,6 @@
 <template>
   <div class="chat-container">
-    <h3>Чат с {{ chatUser?.name }}</h3>
+    <h3 class="user__title">Чат с {{ chatUser?.name }}</h3>
     <div class="messages">
       <div
         v-for="(message, index) in messages"
@@ -34,7 +34,10 @@
         @keydown.enter="sendMessage"
         placeholder="Введите сообщение..."
       />
-      <button @click="sendMessage" class="send-button">Отправить</button>
+      <button @click="sendMessage" class="send-button">
+        <img class="btn-logo" src="../assets/Telegram_logo_icon.svg" alt="" />
+        <span class="send-title">Отправить</span>
+      </button>
     </div>
   </div>
 </template>
@@ -133,12 +136,13 @@ export default {
   overflow: hidden;
 }
 
-h3 {
+.user__title {
   padding: 10px;
-  background-color: #0088cc;
+  background-color: #006598;
   color: white;
   margin: 0;
   text-align: center;
+  font-size: clamp(14px, 16px, 18px);
 }
 
 .messages {
@@ -151,15 +155,15 @@ h3 {
 
 .message {
   display: flex;
-  flex-direction: column;
   margin-bottom: 10px;
   max-width: 100%;
   width: max-content;
   min-width: 150px;
-  padding: 10px;
+  padding: 5px;
   margin-top: 5px;
   margin-bottom: 5px;
   border-radius: 10px;
+  gap: 10px;
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -178,13 +182,13 @@ h3 {
 }
 
 .sender {
-  font-size: 0.9rem;
+  font-size: clamp(12px, 14px, 16px);
   font-weight: bold;
 }
 
 .text {
   margin-top: 5px;
-  font-size: 0.95rem;
+  font-size: clamp(12px, 14px, 16px);
 }
 
 .message-input {
@@ -202,25 +206,52 @@ h3 {
   flex: 1;
   padding: 10px;
   border: none;
-  font-size: 1.5rem;
+  font-size: clamp(13px, 15px, 18px);
   border-radius: 20px;
   background-color: #f0f0f0;
   outline: none;
 }
 
-.message-input .send-button {
+.message-input {
   background-color: #0088cc;
   color: white;
+  border: none;
+  padding: 10px 20px 15px;
+  border-radius: 20px 20px 0 0;
+  margin-left: 10px;
+  cursor: pointer;
+  display: flex;
+  align-self: center;
+  height: 40px;
+}
+.send-button {
+  background-color: #000000;
+  color: #ffffff;
   border: none;
   padding: 10px 20px;
   border-radius: 20px;
   margin-left: 10px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.btn-logo {
+  height: 20px;
+  width: auto;
+}
+.send-title {
+  display: block;
 }
 
 .chat__user {
   width: 35px;
   height: 35px;
   border-radius: 50%;
+}
+@media screen and (max-width: 767px) {
+  .send-title {
+    display: none;
+  }
 }
 </style>

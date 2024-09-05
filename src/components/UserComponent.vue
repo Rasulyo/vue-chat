@@ -44,7 +44,8 @@ export default {
 
   &__title {
     color: #000;
-    font-size: 1.6rem;
+    font-size: clamp(14px, 16px, 18px);
+    background: none;
   }
   &__btn {
     border-radius: 3px;

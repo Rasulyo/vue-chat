@@ -26,7 +26,7 @@ import UserSelectionModal from "../components/UserSelectionModal.vue";
 import ChatComponent from "../components/ChatComponent.vue";
 import UserComponent from "../components/UserComponent.vue";
 import ChatsComponent from "../components/ChatsComponent.vue";
-import { handleBroadcastMessage } from "../utils/broadCastService";
+
 const channelName = "chat_channel";
 const bc = new BroadcastChannel(channelName);
 
@@ -43,7 +43,7 @@ export default {
       availableUsers: [
         {
           id: 1,
-          name: "Nick",
+          name: "Nicki Angela",
           selected: false,
           img: "https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=1480&t=st=1725445424~exp=1725446024~hmac=1f005acd5003f70621766cc305edf14552e8ab9bb8964374ff4ede5a5d2e53d5",
         },
@@ -130,17 +130,35 @@ export default {
       this.currentChatUser = user;
     },
     handleBroadcastMessage(event) {
-      const { availableUsers, selectedUser, currentChatUser } =
-        handleBroadcastMessage(
-          event,
-          this.availableUsers,
-          this.selectedUser,
-          this.currentChatUser,
-          this.$refs.chatComponent
-        );
-      this.availableUsers = availableUsers;
-      this.selectedUser = selectedUser;
-      this.currentChatUser = currentChatUser;
+      if (event.data.type === "userSelection") {
+        const user = event.data.user;
+        this.availableUsers = this.availableUsers.map((item) => {
+          if (user.id === item.id) {
+            item.selected = true;
+          }
+          return item;
+        });
+        if (this.selectedUser && this.selectedUser.id === user.id) {
+          this.selectedUser = user;
+        }
+      } else if (event.data.type === "chatUserSelection") {
+        const user = event.data.user;
+        if (this.currentChatUser && this.currentChatUser.id === user.id) {
+          this.currentChatUser = user;
+        }
+      } else if (event.data.type === "userDeselection") {
+        const user = event.data.user;
+        this.availableUsers = this.availableUsers.map((item) => {
+          if (user.id === item.id) {
+            item.selected = false;
+          }
+          return item;
+        });
+      } else if (event.data.type === "newMessage") {
+        if (this.$refs.chatComponent) {
+          this.$refs.chatComponent.handleBroadcastMessage(event);
+        }
+      }
     },
   },
 };
@@ -162,6 +180,9 @@ export default {
     margin-top: 5px;
     border-top: 1px solid rgba($color: #d7d7d7, $alpha: 0.4);
     gap: 15px;
+    @media screen and (max-width: 767px) {
+      gap: 5px;
+    }
   }
 }
 </style>

@@ -1,3 +1,4 @@
+//losing connection
 export function handleBroadcastMessage(
   event,
   availableUsers,
@@ -40,7 +41,6 @@ export function handleBroadcastMessage(
         }),
     };
   } else if (event.data.type === "newMessage" && chatComponent) {
-    console.log("cjat", chatComponent);
     chatComponent.handleBroadcastMessage(event);
   }
   return { availableUsers, selectedUser, currentChatUser };

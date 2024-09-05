@@ -6,7 +6,10 @@
       class="chat"
       @click="openChat(user)"
     >
-      {{ user.name }}
+      <img class="chat__user" :src="user.img" alt="user" />
+      <span class="user__name">
+        {{ user.name }}
+      </span>
     </button>
   </div>
 </template>
@@ -31,20 +34,29 @@ export default {
   flex-direction: column;
   align-self: flex-start;
   height: calc(100vh - 100px);
-  min-width: 250px;
-  gap: 5px;
+  width: clamp(60px, 14vw, 200px);
+  min-width: auto;
+  gap: 10px;
+  padding-top: 10px;
   background: rgba($color: #9d9d9d, $alpha: 0.4);
 
   .chat {
     height: 35px;
     padding: 5px 10px;
-    border-bottom: 2px solid #0088cc;
-    border-top: none;
-    border-right: none;
-    border-left: none;
-    font-size: 1rem;
+    border: none;
+    gap: 10px;
+    display: flex;
+    align-items: center;
+    font-size: clamp(12px, 14px, 16px);
     color: rgb(0, 0, 0);
     background: rgba($color: #d7d7d7, $alpha: 0.4);
+
+    .user__name {
+      display: block;
+      @media screen and (max-width: 767px) {
+        display: none;
+      }
+    }
 
     &:hover {
       cursor: pointer;
